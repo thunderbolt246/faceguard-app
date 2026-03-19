@@ -37,14 +37,11 @@ if not DB_PASSWORD:
     )
 
 # Connection pool to handle multiple concurrent requests efficiently
+from psycopg2.pool import SimpleConnectionPool
+
 db_pool = SimpleConnectionPool(
-    1,  # Minimum connections
-    20,  # Maximum connections (adjust based on expected load)
-    host="localhost",
-    database="biometric_system",
-    user="postgres",
-    password=DB_PASSWORD,
-    port=5432
+    1, 20,
+    dsn="postgresql://faceguard_user:TvXIq9byfm8VkUTMMDVigbVOnMyHbvVM@dpg-d6tqrehaae7s73e41qbg-a.oregon-postgres.render.com/faceguard_hjjw?sslmode=require"
 )
 
 # Graceful shutdown: close all pool connections when app exits
