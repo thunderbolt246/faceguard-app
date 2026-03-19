@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Access Control System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            color: #1a1a1a;
+        }
+
+        .header-bar {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            color: white;
+            padding: 0 40px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .gov-seal {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #1e3a8a;
+            border: 3px solid #fbbf24;
+        }
+
+        .header-title {
+            border-left: 2px solid rgba(255, 255, 255, 0.3);
+            padding-left: 20px;
+        }
+
+        .header-title h1 {
+            font-size: 1.3em;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-bottom: 2px;
+        }
+
+        .header-title p {
+            font-size: 0.8em;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .classification-badge {
+            background: #dc2626;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 70px;
+            width: 260px;
+            height: calc(100vh - 70px);
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            padding: 25px 0;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section-title {
+            padding: 0 20px 10px;
+            font-size: 0.75em;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95em;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: #f3f4f6;
+            color: #1e3a8a;
+        }
+
+        .nav-item.active {
+            background: #eff6ff;
+            color: #1e3a8a;
+            border-left-color: #1e3a8a;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 1.2em;
+            width: 24px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            margin-top: 70px;
+            padding: 35px 45px;
+            min-height: calc(100vh - 70px);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 25px;
+            font-size: 0.9em;
+            color: #6b7280;
+        }
+
+        .breadcrumb span {
+            color: #1e3a8a;
+            font-weight: 600;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .page-header h2 {
+            font-size: 1.9em;
+            font-weight: 700;
+            color: #111827;
+            letter-spacing: -0.3px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-icon {
+            font-size: 1.5em;
+        }
+
+        .stat-info strong {
+            display: block;
+            font-size: 1.3em;
+            color: #1e3a8a;
+        }
+
+        .stat-info span {
+            font-size: 0.8em;
+            color: #6b7280;
+        }
+
+        .search-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 25px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.95em;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+
+        .users-table {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        th {
+            padding: 15px 20px;
+            text-align: left;
+            font-size: 0.85em;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .user-id {
+            font-size: 0.85em;
+            color: #6b7280;
+            font-family: 'Courier New', monospace;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2563eb;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        .btn-biometric {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .btn-biometric:hover {
+            background: #7c3aed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .loading-spinner {
+            font-size: 3em;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .modal-header h3 {
+            font-size: 1.3em;
+            color: #111827;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+
+        .modal-close:hover {
+            color: #111827;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 0.95em;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .btn-modal {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.95em;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-modal-cancel {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-modal-cancel:hover {
+            background: #d1d5db;
+        }
+
+        .btn-modal-submit {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .btn-modal-submit:hover {
+            background: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <div class="header-left">
+            <div class="gov-seal">🛡️</div>
+            <div class="header-title">
+                <h1>Access Control & Biometric Management System</h1>
+                <p>Department of Security Operations</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="classification-badge">OFFICIAL USE ONLY</div>
+            <div class="user-info">
+                <span>👤</span>
+                <span>Administrator</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="nav-section">
+            <div class="nav-section-title">Main Menu</div>
+            <a href="/" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/user_management" class="nav-item active">
+                <span class="nav-icon">👥</span>
+                <span>User Management</span>
+            </a>
+            <div class="nav-item">
+                <span class="nav-icon">💻</span>
+                <span>Device Registry</span>
+            </div>
+            <div class="nav-item">
+                <span class="nav-icon">📷</span>
+                <span>Biometric Data</span>
+            </div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Reports & Logs</div>
+            <div class="nav-item">
+                <span class="nav-icon">📋</span>
+                <span>Access Logs</span>
+            </div>
+            <div class="nav-item">
+                <span class="nav-icon">📈</span>
+                <span>Analytics</span>
+            </div>
+            <div class="nav-item">
+                <span class="nav-icon">⚠️</span>
+                <span>Security Alerts</span>
+            </div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">System</div>
+            <div class="nav-item">
+                <span class="nav-icon">⚙️</span>
+                <span>Settings</span>
+            </div>
+            <div class="nav-item">
+                <span class="nav-icon">❓</span>
+                <span>Help & Support</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="breadcrumb">
+            Home › <span>User Management</span>
+        </div>
+
+        <div class="page-header">
+            <h2>User Management</h2>
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <strong id="totalUsers">0</strong>
+                        <span>Total Users</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <strong id="enrolledUsers">0</strong>
+                        <span>Enrolled</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search users by name or ID...">
+        </div>
+
+        <div class="users-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User Information</th>
+                        <th>Biometric Status</th>
+                        <th>Device Assignment</th>
+                        <th>Created Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <tr>
+                        <td colspan="5">
+                            <div class="loading">
+                                <div class="loading-spinner">⏳</div>
+                                <p>Loading users...</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit User</h3>
+                <button class="modal-close" onclick="closeEditModal()">×</button>
+            </div>
+            <form id="editUserForm">
+                <input type="hidden" id="editUserId">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="editUserName" class="form-input" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal btn-modal-cancel" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn-modal btn-modal-submit">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let allUsers = [];
+
+        // Load users on page load
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users');
+                const data = await response.json();
+                allUsers = data.users;
+                
+                // Update stats
+                document.getElementById('totalUsers').textContent = data.total;
+                const enrolled = allUsers.filter(u => u.has_biometric).length;
+                document.getElementById('enrolledUsers').textContent = enrolled;
+                
+                // Render table
+                renderUsers(allUsers);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showEmptyState('Error loading users. Please refresh the page.');
+            }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (users.length === 0) {
+                showEmptyState('No users found. Create a new user from the dashboard.');
+                return;
+            }
+            
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>
+                        <div class="user-name">${user.name}</div>
+                        <div class="user-id">${user.user_id}</div>
+                    </td>
+                    <td>
+                        ${user.has_biometric 
+                            ? '<span class="badge badge-success">✓ Enrolled</span>' 
+                            : '<span class="badge badge-warning">⚠ Not Enrolled</span>'}
+                    </td>
+                    <td>
+                        ${user.assigned_device 
+                            ? `<span class="badge badge-info">📍 ${user.assigned_device}</span>` 
+                            : '<span style="color: #9ca3af;">Not Assigned</span>'}
+                    </td>
+                    <td>${user.created_at || 'N/A'}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editUser('${user.user_id}', '${user.name}')">✏️ Edit</button>
+                            ${user.has_biometric 
+                                ? `<button class="btn-action btn-biometric" onclick="removeBiometric('${user.user_id}')">🗑️ Remove Bio</button>` 
+                                : ''}
+                            <button class="btn-action btn-delete" onclick="deleteUser('${user.user_id}', '${user.name}')">🗑️ Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showEmptyState(message) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <div class="empty-icon">👤</div>
+                            <h3>${message}</h3>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = allUsers.filter(user => 
+                user.name.toLowerCase().includes(searchTerm) || 
+                user.user_id.toLowerCase().includes(searchTerm)
+            );
+            renderUsers(filtered);
+        });
+
+        // Edit user
+        function editUser(userId, userName) {
+            document.getElementById('editUserId').value = userId;
+            document.getElementById('editUserName').value = userName;
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        document.getElementById('editUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('editUserId').value;
+            const newName = document.getElementById('editUserName').value;
+
+            const formData = new FormData();
+            formData.append('name', newName);
+
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('User updated successfully!');
+                    closeEditModal();
+                    loadUsers();
+                } else {
+                    alert('Failed to update user');
+                }
+            } catch (error) {
+                console.error('Error updating user:', error);
+                alert('Error updating user');
+            }
+        });
+
+        // Delete user
+        async function deleteUser(userId, userName) {
+            if (!confirm(`Are you sure you want to delete user "${userName}"?\n\nThis action cannot be undone and will remove:\n• User account\n• Biometric data\n• Device assignments`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('User deleted successfully!');
+                    loadUsers();
+                } else {
+                    alert('Failed to delete user');
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Error deleting user');
+            }
+        }
+
+        // Remove biometric data
+        async function removeBiometric(userId) {
+            if (!confirm('Are you sure you want to remove biometric data for this user?\n\nThe user will need to re-enroll their biometric information.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/${userId}/biometric`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Biometric data removed successfully!');
+                    loadUsers();
+                } else {
+                    alert('Failed to remove biometric data');
+                }
+            } catch (error) {
+                console.error('Error removing biometric:', error);
+                alert('Error removing biometric data');
+            }
+        }
+
+        // Load users on page load
+        loadUsers();
+    </script>
+</body>
+</html>

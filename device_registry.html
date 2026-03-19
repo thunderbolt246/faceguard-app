@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Registry - Access Control System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            color: #1a1a1a;
+        }
+
+        .header-bar {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            color: white;
+            padding: 0 40px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .gov-seal {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #1e3a8a;
+            border: 3px solid #fbbf24;
+        }
+
+        .header-title h1 {
+            font-size: 1.3em;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .header-title p {
+            font-size: 0.8em;
+            opacity: 0.9;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .classification-badge {
+            background: #dc2626;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 70px;
+            width: 260px;
+            height: calc(100vh - 70px);
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            padding: 25px 0;
+            overflow-y: auto;
+        }
+
+        .nav-section-title {
+            padding: 0 20px 10px;
+            font-size: 0.75em;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95em;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: #f3f4f6;
+            color: #1e3a8a;
+        }
+
+        .nav-item.active {
+            background: #eff6ff;
+            color: #1e3a8a;
+            border-left-color: #1e3a8a;
+            font-weight: 600;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            margin-top: 70px;
+            padding: 35px 45px;
+            min-height: calc(100vh - 70px);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-header h2 {
+            font-size: 1.9em;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .btn-primary {
+            padding: 12px 24px;
+            background: #1e3a8a;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #1e40af;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon {
+            font-size: 2em;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9em;
+        }
+
+        .devices-table {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        th {
+            padding: 15px 20px;
+            text-align: left;
+            font-size: 0.85em;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .device-name {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .device-id {
+            font-size: 0.85em;
+            color: #6b7280;
+            font-family: 'Courier New', monospace;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .btn-assign {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-assign:hover {
+            background: #059669;
+        }
+
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2563eb;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .modal-header h3 {
+            font-size: 1.3em;
+            color: #111827;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .btn-modal-cancel {
+            padding: 10px 24px;
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-modal-submit {
+            padding: 10px 24px;
+            background: #1e3a8a;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <div class="header-left">
+            <div class="gov-seal">🛡️</div>
+            <div class="header-title">
+                <h1>Access Control & Biometric Management System</h1>
+                <p>Department of Security Operations</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="classification-badge">OFFICIAL USE ONLY</div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="nav-section">
+            <div class="nav-section-title">Main Menu</div>
+            <a href="/" class="nav-item">
+                <span>📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/user_management" class="nav-item">
+                <span>👥</span>
+                <span>User Management</span>
+            </a>
+            <a href="/device_registry" class="nav-item active">
+                <span>💻</span>
+                <span>Device Registry</span>
+            </a>
+            <a href="/biometric_data" class="nav-item">
+                <span>📷</span>
+                <span>Biometric Data</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h2>Device Registry</h2>
+            <button class="btn-primary" onclick="openAddDeviceModal()">➕ Register New Device</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">💻</span>
+                </div>
+                <div class="stat-value" id="totalDevices">0</div>
+                <div class="stat-label">Total Devices</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">✅</span>
+                </div>
+                <div class="stat-value" id="activeDevices">0</div>
+                <div class="stat-label">Active Devices</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">🔗</span>
+                </div>
+                <div class="stat-value" id="assignedDevices">0</div>
+                <div class="stat-label">Assigned Devices</div>
+            </div>
+        </div>
+
+        <div class="devices-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Device Information</th>
+                        <th>Type</th>
+                        <th>Location</th>
+                        <th>Assigned User</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="devicesTableBody">
+                    <tr>
+                        <td colspan="6">
+                            <div class="loading">
+                                <p>Loading devices...</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Device Modal -->
+    <div id="addDeviceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Register New Device</h3>
+                <button class="modal-close" onclick="closeAddDeviceModal()">×</button>
+            </div>
+            <form id="addDeviceForm">
+                <div class="form-group">
+                    <label class="form-label">Device Name</label>
+                    <input type="text" id="addDeviceName" class="form-input" required placeholder="e.g., Reception Terminal">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Device Type</label>
+                    <select id="addDeviceType" class="form-select" required>
+                        <option value="">Select Type</option>
+                        <option value="Workstation">Workstation</option>
+                        <option value="Terminal">Terminal</option>
+                        <option value="Kiosk">Kiosk</option>
+                        <option value="Mobile">Mobile Device</option>
+                        <option value="Server">Server</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" id="addLocation" class="form-input" required placeholder="e.g., Building A, Floor 2">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal-cancel" onclick="closeAddDeviceModal()">Cancel</button>
+                    <button type="submit" class="btn-modal-submit">Register Device</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Device Modal -->
+    <div id="editDeviceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Device</h3>
+                <button class="modal-close" onclick="closeEditDeviceModal()">×</button>
+            </div>
+            <form id="editDeviceForm">
+                <input type="hidden" id="editDeviceId">
+                <div class="form-group">
+                    <label class="form-label">Device Name</label>
+                    <input type="text" id="editDeviceName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Device Type</label>
+                    <select id="editDeviceType" class="form-select" required>
+                        <option value="Workstation">Workstation</option>
+                        <option value="Terminal">Terminal</option>
+                        <option value="Kiosk">Kiosk</option>
+                        <option value="Mobile">Mobile Device</option>
+                        <option value="Server">Server</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" id="editLocation" class="form-input" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal-cancel" onclick="closeEditDeviceModal()">Cancel</button>
+                    <button type="submit" class="btn-modal-submit">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Assign User Modal -->
+    <div id="assignUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Assign User to Device</h3>
+                <button class="modal-close" onclick="closeAssignModal()">×</button>
+            </div>
+            <form id="assignUserForm">
+                <input type="hidden" id="assignDeviceId">
+                <div class="form-group">
+                    <label class="form-label">Select User</label>
+                    <select id="assignUserId" class="form-select" required>
+                        <option value="">Loading users...</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal-cancel" onclick="closeAssignModal()">Cancel</button>
+                    <button type="submit" class="btn-modal-submit">Assign User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let allDevices = [];
+        let allUsers = [];
+
+        async function loadDevices() {
+            try {
+                const response = await fetch('/api/devices');
+                const data = await response.json();
+                allDevices = data.devices;
+                
+                document.getElementById('totalDevices').textContent = data.total;
+                const active = allDevices.filter(d => d.status === 'active').length;
+                document.getElementById('activeDevices').textContent = active;
+                const assigned = allDevices.filter(d => d.assigned_user_id).length;
+                document.getElementById('assignedDevices').textContent = assigned;
+                
+                renderDevices(allDevices);
+            } catch (error) {
+                console.error('Error loading devices:', error);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users');
+                const data = await response.json();
+                allUsers = data.users;
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        function renderDevices(devices) {
+            const tbody = document.getElementById('devicesTableBody');
+            
+            if (devices.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-icon">💻</div>
+                                <h3>No devices registered</h3>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = devices.map(device => `
+                <tr>
+                    <td>
+                        <div class="device-name">${device.device_name}</div>
+                        <div class="device-id">${device.device_id}</div>
+                    </td>
+                    <td>${device.device_type}</td>
+                    <td>${device.location}</td>
+                    <td>
+                        ${device.assigned_user_name 
+                            ? `<span class="badge badge-info">👤 ${device.assigned_user_name}</span>` 
+                            : '<span style="color: #9ca3af;">Not Assigned</span>'}
+                    </td>
+                    <td>
+                        ${device.status === 'active' 
+                            ? '<span class="badge badge-success">● Active</span>' 
+                            : '<span class="badge badge-inactive">● Inactive</span>'}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-assign" onclick="openAssignModal('${device.device_id}')">
+                                ${device.assigned_user_id ? '🔄 Reassign' : '🔗 Assign'}
+                            </button>
+                            <button class="btn-action btn-edit" onclick="editDevice('${device.device_id}')">✏️ Edit</button>
+                            ${device.device_id !== 'LOCAL_LAPTOP_001' ? 
+                                `<button class="btn-action btn-delete" onclick="deleteDevice('${device.device_id}', '${device.device_name}')">🗑️</button>` 
+                                : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openAddDeviceModal() {
+            document.getElementById('addDeviceModal').classList.add('active');
+        }
+
+        function closeAddDeviceModal() {
+            document.getElementById('addDeviceModal').classList.remove('active');
+            document.getElementById('addDeviceForm').reset();
+        }
+
+        document.getElementById('addDeviceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('device_name', document.getElementById('addDeviceName').value);
+            formData.append('device_type', document.getElementById('addDeviceType').value);
+            formData.append('location', document.getElementById('addLocation').value);
+
+            try {
+                const response = await fetch('/api/devices', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('Device registered successfully!');
+                    closeAddDeviceModal();
+                    loadDevices();
+                } else {
+                    alert('Failed to register device');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error registering device');
+            }
+        });
+
+        function editDevice(deviceId) {
+            const device = allDevices.find(d => d.device_id === deviceId);
+            if (!device) return;
+
+            document.getElementById('editDeviceId').value = deviceId;
+            document.getElementById('editDeviceName').value = device.device_name;
+            document.getElementById('editDeviceType').value = device.device_type;
+            document.getElementById('editLocation').value = device.location;
+            document.getElementById('editDeviceModal').classList.add('active');
+        }
+
+        function closeEditDeviceModal() {
+            document.getElementById('editDeviceModal').classList.remove('active');
+        }
+
+        document.getElementById('editDeviceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const deviceId = document.getElementById('editDeviceId').value;
+            const formData = new FormData();
+            formData.append('device_name', document.getElementById('editDeviceName').value);
+            formData.append('device_type', document.getElementById('editDeviceType').value);
+            formData.append('location', document.getElementById('editLocation').value);
+
+            try {
+                const response = await fetch(`/api/devices/${deviceId}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('Device updated successfully!');
+                    closeEditDeviceModal();
+                    loadDevices();
+                } else {
+                    alert('Failed to update device');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error updating device');
+            }
+        });
+
+        async function deleteDevice(deviceId, deviceName) {
+            if (!confirm(`Delete device "${deviceName}"?\n\nThis will also remove any user assignments.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/devices/${deviceId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Device deleted successfully!');
+                    loadDevices();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to delete device');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error deleting device');
+            }
+        }
+
+        async function openAssignModal(deviceId) {
+            document.getElementById('assignDeviceId').value = deviceId;
+            
+            const select = document.getElementById('assignUserId');
+            select.innerHTML = '<option value="">Select a user...</option>';
+            
+            allUsers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.user_id;
+                option.textContent = `${user.name} (${user.has_biometric ? '✓ Enrolled' : '⚠ Not Enrolled'})`;
+                select.appendChild(option);
+            });
+            
+            document.getElementById('assignUserModal').classList.add('active');
+        }
+
+        function closeAssignModal() {
+            document.getElementById('assignUserModal').classList.remove('active');
+        }
+
+        document.getElementById('assignUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const deviceId = document.getElementById('assignDeviceId').value;
+            const userId = document.getElementById('assignUserId').value;
+            
+            const formData = new FormData();
+            formData.append('user_id', userId);
+
+            try {
+                const response = await fetch(`/api/devices/${deviceId}/assign`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('User assigned successfully!');
+                    closeAssignModal();
+                    loadDevices();
+                } else {
+                    alert('Failed to assign user');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error assigning user');
+            }
+        });
+
+        loadDevices();
+        loadUsers();
+    </script>
+</body>
+</html>

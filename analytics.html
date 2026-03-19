@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Access Control System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Roboto', Arial, sans-serif; background: #f0f2f5; min-height: 100vh; color: #1a1a1a; }
+        .header-bar { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 0 40px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); position: fixed; top: 0; left: 0; right: 0; z-index: 1000; height: 70px; display: flex; align-items: center; justify-content: space-between; }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .gov-seal { width: 50px; height: 50px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; font-weight: bold; color: #1e3a8a; border: 3px solid #fbbf24; }
+        .header-title h1 { font-size: 1.3em; font-weight: 600; }
+        .header-title p { font-size: 0.8em; opacity: 0.9; }
+        .classification-badge { background: #dc2626; padding: 6px 16px; border-radius: 4px; font-size: 0.75em; font-weight: 700; letter-spacing: 1px; }
+        .sidebar { position: fixed; left: 0; top: 70px; width: 260px; height: calc(100vh - 70px); background: #ffffff; border-right: 1px solid #e5e7eb; padding: 25px 0; overflow-y: auto; }
+        .nav-section { margin-bottom: 25px; }
+        .nav-section-title { padding: 0 20px 10px; font-size: 0.75em; font-weight: 700; color: #6b7280; text-transform: uppercase; }
+        .nav-item { padding: 12px 20px; color: #4b5563; display: flex; align-items: center; gap: 12px; font-size: 0.95em; transition: all 0.2s; cursor: pointer; border-left: 3px solid transparent; text-decoration: none; }
+        .nav-item:hover { background: #f3f4f6; color: #1e3a8a; }
+        .nav-item.active { background: #eff6ff; color: #1e3a8a; border-left-color: #1e3a8a; font-weight: 600; }
+        .main-content { margin-left: 260px; margin-top: 70px; padding: 35px 45px; min-height: calc(100vh - 70px); }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-header h2 { font-size: 1.9em; font-weight: 700; color: #111827; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 25px; }
+        .pie-chart-container { width: 100%; max-width: 500px; margin: 0 auto; position: relative; }
+        .pie-chart { width: 100%; height: 400px; }
+        .analytics-card { background: white; padding: 30px; border-radius: 8px; border: 1px solid #e5e7eb; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f3f4f6; }
+        .card-header h3 { font-size: 1.2em; color: #111827; }
+        .card-icon { font-size: 1.5em; }
+        .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f3f4f6; }
+        .metric-label { color: #6b7280; font-size: 0.95em; }
+        .metric-value { font-size: 1.3em; font-weight: 700; color: #1e3a8a; }
+        .chart-container { height: 400px; position: relative; }
+        .trend-chart { width: 100%; height: 100%; }
+        .full-width-card { grid-column: 1 / -1; }
+        .time-range { display: flex; gap: 10px; background: #f9fafb; padding: 5px; border-radius: 6px; }
+        .time-btn { padding: 8px 16px; border: none; background: transparent; color: #6b7280; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.85em; transition: all 0.2s; }
+        .time-btn:hover { background: #e5e7eb; }
+        .time-btn.active { background: white; color: #1e3a8a; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+        .progress-bar { width: 100%; height: 10px; background: #e5e7eb; border-radius: 5px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #1e3a8a, #3b82f6); transition: width 0.3s; }
+        .time-indicator { font-size: 0.75em; color: #6b7280; margin-left: 5px; }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <div class="header-left">
+            <div class="gov-seal">🛡️</div>
+            <div class="header-title">
+                <h1>Access Control & Biometric Management System</h1>
+                <p>Department of Security Operations</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="classification-badge">OFFICIAL USE ONLY</div>
+        </div>
+    </div>
+    <div class="sidebar">
+        <div class="nav-section">
+            <div class="nav-section-title">Main Menu</div>
+            <a href="/" class="nav-item"><span>📊</span><span>Dashboard</span></a>
+            <a href="/user_management" class="nav-item"><span>👥</span><span>User Management</span></a>
+            <a href="/device_registry" class="nav-item"><span>💻</span><span>Device Registry</span></a>
+            <a href="/biometric_data" class="nav-item"><span>📷</span><span>Biometric Data</span></a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Reports & Logs</div>
+            <a href="/access_logs" class="nav-item"><span>📋</span><span>Access Logs</span></a>
+            <a href="/analytics" class="nav-item active"><span>📈</span><span>Analytics</span></a>
+            <a href="/security_alerts" class="nav-item"><span>⚠️</span><span>Security Alerts</span></a>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="page-header">
+            <h2>System Analytics</h2>
+            <div class="time-range">
+                <button class="time-btn active" onclick="setTimeRange('today')">Today</button>
+                <button class="time-btn" onclick="setTimeRange('week')">Week</button>
+                <button class="time-btn" onclick="setTimeRange('month')">Month</button>
+            </div>
+        </div>
+        <div class="analytics-card full-width-card" style="margin-bottom: 25px;">
+            <div class="card-header">
+                <h3>Access Distribution (<span id="pieChartTitle">Last 24 Hours</span>)</h3>
+                <span class="card-icon">📊</span>
+            </div>
+            <div class="pie-chart-container">
+                <canvas id="pieChart" class="pie-chart"></canvas>
+            </div>
+        </div>
+        <div class="dashboard-grid">
+            <div class="analytics-card">
+                <div class="card-header">
+                    <h3>Access Metrics <span class="time-indicator" id="accessMetricsTime">(Today)</span></h3>
+                    <span class="card-icon">📊</span>
+                </div>
+                <div class="metric-row"><span class="metric-label">Total Access Attempts</span><span class="metric-value" id="totalAttempts">0</span></div>
+                <div class="metric-row"><span class="metric-label">Successful Access</span><span class="metric-value" id="successfulAccess">0</span></div>
+                <div class="metric-row"><span class="metric-label">Failed Attempts</span><span class="metric-value" id="failedAttempts">0</span></div>
+                <div class="metric-row"><span class="metric-label">Success Rate</span><div style="flex: 1; margin-left: 20px;"><span class="metric-value" id="successRate">0%</span><div class="progress-bar"><div class="progress-fill" id="successProgress" style="width: 0%"></div></div></div></div>
+            </div>
+            <div class="analytics-card">
+                <div class="card-header">
+                    <h3>User Statistics <span class="time-indicator" id="userStatsTime">(Today)</span></h3>
+                    <span class="card-icon">👥</span>
+                </div>
+                <div class="metric-row"><span class="metric-label">Total Registered Users</span><span class="metric-value" id="totalUsers">0</span></div>
+                <div class="metric-row"><span class="metric-label">Enrolled Users</span><span class="metric-value" id="enrolledUsers">0</span></div>
+                <div class="metric-row"><span class="metric-label">Active Users</span><span class="metric-value" id="activeUsers">0</span></div>
+                <div class="metric-row"><span class="metric-label">Enrollment Rate</span><div style="flex: 1; margin-left: 20px;"><span class="metric-value" id="enrollmentRate">0%</span><div class="progress-bar"><div class="progress-fill" id="enrollmentProgress" style="width: 0%"></div></div></div></div>
+            </div>
+            <div class="analytics-card">
+                <div class="card-header"><h3>Device Statistics</h3><span class="card-icon">💻</span></div>
+                <div class="metric-row"><span class="metric-label">Total Devices</span><span class="metric-value" id="totalDevices">0</span></div>
+                <div class="metric-row"><span class="metric-label">Active Devices</span><span class="metric-value" id="activeDevices">0</span></div>
+                <div class="metric-row"><span class="metric-label">Assigned Devices</span><span class="metric-value" id="assignedDevices">0</span></div>
+                <div class="metric-row"><span class="metric-label">Utilization Rate</span><div style="flex: 1; margin-left: 20px;"><span class="metric-value" id="utilizationRate">0%</span><div class="progress-bar"><div class="progress-fill" id="utilizationProgress" style="width: 0%"></div></div></div></div>
+            </div>
+            <div class="analytics-card">
+                <div class="card-header">
+                    <h3>Security Overview <span class="time-indicator" id="securityTime">(Today)</span></h3>
+                    <span class="card-icon">🔒</span>
+                </div>
+                <div class="metric-row"><span class="metric-label">Security Alerts</span><span class="metric-value" id="securityAlerts">0</span></div>
+                <div class="metric-row"><span class="metric-label">Unreviewed Alerts</span><span class="metric-value" id="unreviewedAlerts" style="color: #ef4444;">0</span></div>
+                <div class="metric-row"><span class="metric-label">Average Confidence</span><span class="metric-value" id="avgConfidence">0%</span></div>
+                <div class="metric-row"><span class="metric-label">Biometric Quality</span><div style="flex: 1; margin-left: 20px;"><span class="metric-value" id="avgQuality">0%</span><div class="progress-bar"><div class="progress-fill" id="qualityProgress" style="width: 0%"></div></div></div></div>
+            </div>
+            <div class="analytics-card full-width-card">
+                <div class="card-header">
+                    <h3><span id="chartMainTitle">Hourly Trend</span> (<span id="chartTitle">Last 24 Hours</span>)</h3>
+                    <span class="card-icon">📈</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="trendChart" class="trend-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        let currentTimeRange = 'today';
+        let allLogs = [], allAlerts = [], allUsers = [], allDevices = [], allBiometric = [];
+        let pieChartInstance = null;
+        let trendChartInstance = null;
+
+        // FIXED: Helper function to parse timestamps correctly
+        function parseTimestamp(ts) {
+            return new Date(ts.replace(' ', 'T'));
+        }
+
+        function setTimeRange(range) {
+            currentTimeRange = range;
+            document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            const titles = {'today': 'Last 24 Hours', 'week': 'Last 7 Days', 'month': 'Last 30 Days'};
+            const mainTitles = {'today': 'Hourly Trend', 'week': 'Daily Trend', 'month': 'Weekly Trend'};
+            const timeLabels = {'today': '(Today)', 'week': '(This Week)', 'month': '(This Month)'};
+            document.getElementById('chartTitle').textContent = titles[range];
+            document.getElementById('chartMainTitle').textContent = mainTitles[range];
+            document.getElementById('pieChartTitle').textContent = titles[range];
+            document.getElementById('accessMetricsTime').textContent = timeLabels[range];
+            document.getElementById('userStatsTime').textContent = timeLabels[range];
+            document.getElementById('securityTime').textContent = timeLabels[range];
+            updateAnalyticsDisplay();
+        }
+
+        function filterByTimeRange(items, range) {
+            const now = new Date();
+            return items.filter(item => {
+                const itemDate = parseTimestamp(item.timestamp);
+                const diffHours = (now - itemDate) / (1000 * 60 * 60);
+                const diffDays = diffHours / 24;
+                if (range === 'today') return diffHours <= 24;
+                if (range === 'week') return diffDays <= 7;
+                if (range === 'month') return diffDays <= 30;
+                return true;
+            });
+        }
+
+        function generateChartData(logs, range) {
+            const now = new Date();
+            const chartData = [];
+            
+            if (range === 'today') {
+                for (let i = 23; i >= 0; i--) {
+                    const hour = new Date(now);
+                    hour.setHours(now.getHours() - i, 0, 0, 0);
+                    const nextHour = new Date(hour);
+                    nextHour.setHours(hour.getHours() + 1);
+                    const hourLogs = logs.filter(log => {
+                        const logDate = parseTimestamp(log.timestamp);
+                        return logDate >= hour && logDate < nextHour;
+                    });
+                    chartData.push({
+                        label: hour.getHours() + ':00',
+                        successful: hourLogs.filter(l => l.status === 'granted').length,
+                        failed: hourLogs.filter(l => l.status === 'denied').length,
+                        total: hourLogs.length
+                    });
+                }
+            } else if (range === 'week') {
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                for (let i = 6; i >= 0; i--) {
+                    const day = new Date(now);
+                    day.setDate(now.getDate() - i);
+                    day.setHours(0, 0, 0, 0);
+                    const nextDay = new Date(day);
+                    nextDay.setDate(day.getDate() + 1);
+                    const dayLogs = logs.filter(log => {
+                        const logDate = parseTimestamp(log.timestamp);
+                        return logDate >= day && logDate < nextDay;
+                    });
+                    chartData.push({
+                        label: days[day.getDay()],
+                        successful: dayLogs.filter(l => l.status === 'granted').length,
+                        failed: dayLogs.filter(l => l.status === 'denied').length,
+                        total: dayLogs.length
+                    });
+                }
+            } else if (range === 'month') {
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                for (let i = 4; i >= 0; i--) {
+                    const weekStart = new Date(now);
+                    weekStart.setDate(now.getDate() - (i * 7 + 6));
+                    weekStart.setHours(0, 0, 0, 0);
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 7);
+                    const weekLogs = logs.filter(log => {
+                        const logDate = parseTimestamp(log.timestamp);
+                        return logDate >= weekStart && logDate < weekEnd;
+                    });
+                    chartData.push({
+                        label: `${months[weekStart.getMonth()]} ${weekStart.getDate()}`,
+                        successful: weekLogs.filter(l => l.status === 'granted').length,
+                        failed: weekLogs.filter(l => l.status === 'denied').length,
+                        total: weekLogs.length
+                    });
+                }
+            }
+            return chartData;
+        }
+
+        function renderChart(chartData) {
+            const ctx = document.getElementById('trendChart');
+            if (trendChartInstance) trendChartInstance.destroy();
+            
+            if (chartData.length === 0 || chartData.every(d => d.total === 0)) {
+                ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
+                const context = ctx.getContext('2d');
+                context.font = '16px Arial';
+                context.fillStyle = '#6b7280';
+                context.textAlign = 'center';
+                context.fillText('No access data for this time range', ctx.width / 2, ctx.height / 2);
+                return;
+            }
+
+            trendChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.map(d => d.label),
+                    datasets: [
+                        {
+                            label: 'Successful Access',
+                            data: chartData.map(d => d.successful),
+                            backgroundColor: '#10b981',
+                            borderColor: '#059669',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            barPercentage: 0.8
+                        },
+                        {
+                            label: 'Failed Attempts',
+                            data: chartData.map(d => d.failed),
+                            backgroundColor: '#ef4444',
+                            borderColor: '#dc2626',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            barPercentage: 0.8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: { size: 14 },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            bodySpacing: 6,
+                            usePointStyle: true,
+                            callbacks: {
+                                footer: function(tooltipItems) {
+                                    let total = 0;
+                                    tooltipItems.forEach(item => total += item.parsed.y);
+                                    return 'Total: ' + total;
+                                },
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y || 0;
+                                    return ' ' + label + ': ' + value;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: false,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: { size: 12 },
+                                color: '#6b7280'
+                            }
+                        },
+                        y: {
+                            stacked: false,
+                            beginAtZero: true,
+                            grid: {
+                                color: '#e5e7eb',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                font: { size: 12 },
+                                color: '#6b7280',
+                                stepSize: 1,
+                                precision: 0
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 750,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+
+        function renderPieChart(successful, failed) {
+            const ctx = document.getElementById('pieChart');
+            if (pieChartInstance) pieChartInstance.destroy();
+            const total = successful + failed;
+            if (total === 0) {
+                ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
+                const context = ctx.getContext('2d');
+                context.font = '16px Arial';
+                context.fillStyle = '#6b7280';
+                context.textAlign = 'center';
+                context.fillText('No data available', ctx.width / 2, ctx.height / 2);
+                return;
+            }
+            pieChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Successful Access', 'Failed Attempts'],
+                    datasets: [{
+                        data: [successful, failed],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 20, font: { size: 14 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateAnalyticsDisplay() {
+            const filteredLogs = filterByTimeRange(allLogs, currentTimeRange);
+            const filteredAlerts = filterByTimeRange(allAlerts, currentTimeRange);
+            
+            // FIXED: Access metrics use logs only, not alerts
+            const failed = filteredLogs.filter(l => l.status === 'denied').length;
+            const successful = filteredLogs.filter(l => l.status === 'granted').length;
+            const totalAttempts = successful + failed;
+            const successRate = totalAttempts > 0 ? Math.round((successful / totalAttempts) * 100) : 0;
+            
+            document.getElementById('totalAttempts').textContent = totalAttempts;
+            document.getElementById('successfulAccess').textContent = successful;
+            document.getElementById('failedAttempts').textContent = failed;
+            document.getElementById('successRate').textContent = successRate + '%';
+            document.getElementById('successProgress').style.width = successRate + '%';
+            
+            const totalUsers = allUsers.length;
+            const enrolled = allUsers.filter(u => u.has_biometric).length;
+            const enrollmentRate = totalUsers > 0 ? Math.round((enrolled / totalUsers) * 100) : 0;
+            
+            // FIXED: Active users exclude "Unknown User" and empty names
+            const activeUsers = new Set(
+                filteredLogs
+                    .map(l => l.user_name)
+                    .filter(u => u && u !== 'Unknown User')
+            ).size;
+            
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('enrolledUsers').textContent = enrolled;
+            document.getElementById('activeUsers').textContent = activeUsers;
+            document.getElementById('enrollmentRate').textContent = enrollmentRate + '%';
+            document.getElementById('enrollmentProgress').style.width = enrollmentRate + '%';
+            
+            const totalDevices = allDevices.length;
+            const activeDevices = allDevices.filter(d => d.status === 'active').length;
+            const assignedDevices = allDevices.filter(d => d.assigned_user_id).length;
+            const utilization = totalDevices > 0 ? Math.round((assignedDevices / totalDevices) * 100) : 0;
+            
+            document.getElementById('totalDevices').textContent = totalDevices;
+            document.getElementById('activeDevices').textContent = activeDevices;
+            document.getElementById('assignedDevices').textContent = assignedDevices;
+            document.getElementById('utilizationRate').textContent = utilization + '%';
+            document.getElementById('utilizationProgress').style.width = utilization + '%';
+            
+            const totalAlerts = filteredAlerts.length;
+            const unreviewed = filteredAlerts.filter(a => !a.reviewed).length;
+            const avgConfidence = filteredLogs.filter(log => log.confidence).reduce((sum, log, _, arr) => arr.length > 0 ? sum + log.confidence / arr.length : 0, 0);
+            const avgQuality = allBiometric.length > 0 ? Math.round(allBiometric.reduce((sum, item) => sum + item.quality_score, 0) / allBiometric.length * 100) : 0;
+            
+            document.getElementById('securityAlerts').textContent = totalAlerts;
+            document.getElementById('unreviewedAlerts').textContent = unreviewed;
+            document.getElementById('avgConfidence').textContent = Math.round(avgConfidence) + '%';
+            document.getElementById('avgQuality').textContent = avgQuality + '%';
+            document.getElementById('qualityProgress').style.width = avgQuality + '%';
+            
+            renderPieChart(successful, failed);
+            const chartData = generateChartData(filteredLogs, currentTimeRange);
+            renderChart(chartData);
+        }
+
+        async function loadAnalytics() {
+            try {
+                const [logsRes, usersRes, devicesRes, bioRes, alertsRes] = await Promise.all([
+                    fetch('/api/access_logs/all'), fetch('/api/users'), fetch('/api/devices'), fetch('/api/biometric'), fetch('/api/security_alerts')
+                ]);
+                const logsData = await logsRes.json();
+                const usersData = await usersRes.json();
+                const devicesData = await devicesRes.json();
+                const bioData = await bioRes.json();
+                const alertsData = await alertsRes.json();
+                allLogs = logsData.logs || [];
+                allUsers = usersData.users || [];
+                allDevices = devicesData.devices || [];
+                allBiometric = bioData.biometric_data || [];
+                allAlerts = alertsData.alerts || [];
+                updateAnalyticsDisplay();
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        setInterval(loadAnalytics, 60000);
+        loadAnalytics();
+    </script>
+</body>
+</html>

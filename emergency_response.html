@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Response - Biometric System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .emergency-container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .emergency-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .emergency-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .emergency-title {
+            font-size: 2.5em;
+            color: #ff4757;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 71, 87, 0.5);
+        }
+
+        .emergency-subtitle {
+            color: #ecf0f1;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .emergency-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .auth-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #dcdde1;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s;
+            color: #2c3e50;
+            background: white;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #ff4757;
+            box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-emergency {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6348 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+        }
+
+        .btn-emergency:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.5);
+        }
+
+        .btn-emergency:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-verify {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .btn-verify:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+        }
+
+        .status-message {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            display: none;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .verified-badge {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 12px 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            border-left: 4px solid #28a745;
+        }
+
+        .verified-badge.active {
+            display: block;
+            animation: slideIn 0.3s;
+        }
+
+        .unlock-section {
+            opacity: 0.5;
+            pointer-events: none;
+            transition: all 0.3s;
+        }
+
+        .unlock-section.enabled {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #dcdde1, transparent);
+            margin: 30px 0;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.85em;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.05em;
+        }
+
+        .info-box-lock {
+            background: #ffe5e5;
+            border-left: 4px solid #ff4757;
+            color: #721c24;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #ecf0f1;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+        }
+
+        .back-link a:hover {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+            transform: translateX(-3px);
+        }
+
+        .countdown {
+            display: none;
+            text-align: center;
+            font-size: 2em;
+            font-weight: 700;
+            color: #ff4757;
+            margin: 20px 0;
+            animation: pulse 1s infinite;
+        }
+
+        .countdown.active {
+            display: block;
+        }
+
+        .quick-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .quick-info-item {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 3px solid #3498db;
+        }
+
+        .quick-info-label {
+            font-size: 0.75em;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .quick-info-value {
+            font-size: 1em;
+            font-weight: 700;
+            color: #2c3e50;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="emergency-container">
+        <div class="emergency-header">
+            <div class="emergency-icon">🆘</div>
+            <h1 class="emergency-title">EMERGENCY RESPONSE</h1>
+            <p class="emergency-subtitle">Supervisor Override System</p>
+        </div>
+
+        <div class="emergency-card">
+            <!-- Supervisor Authentication -->
+            <div class="auth-section">
+                <h2 class="section-title">🔐 Step 1: Supervisor Authentication</h2>
+                
+                <div class="info-box">
+                    <strong>⚠️ Authorization Required</strong>
+                    Only authorized supervisors can initiate emergency unlocks. All actions are logged and monitored.
+                </div>
+
+                <div class="quick-info">
+                    <div class="quick-info-item">
+                        <div class="quick-info-label">Default Supervisor ID</div>
+                        <div class="quick-info-value">SUPER001</div>
+                    </div>
+                    <div class="quick-info-item">
+                        <div class="quick-info-label">Default PIN</div>
+                        <div class="quick-info-value">admin123</div>
+                    </div>
+                </div>
+
+                <div class="verified-badge" id="verifiedBadge">
+                    ✓ Supervisor verified: <span id="supervisorName"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Supervisor ID</label>
+                    <input type="text" id="supervisorId" class="form-input" placeholder="Enter supervisor ID" value="SUPER001">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Supervisor PIN</label>
+                    <input type="password" id="supervisorPin" class="form-input" placeholder="Enter PIN" value="admin123">
+                </div>
+
+                <button class="btn btn-verify" id="verifyBtn" onclick="verifySupervisor()">
+                    Verify Credentials
+                </button>
+
+                <div id="verifyStatus" class="status-message"></div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Emergency Unlock -->
+            <div class="unlock-section" id="unlockSection">
+                <h2 class="section-title">🚨 Step 2: Initiate Emergency Unlock</h2>
+
+                <div class="info-box info-box-lock">
+                    <strong>🔒 Device must already be locked</strong>
+                    Emergency unlock does not lock or unlock devices remotely. The target device must already be locked due to failed authentication. This only authorizes the device to accept emergency credentials during its local emergency mode.
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Device ID</label>
+                    <input type="text" id="deviceId" class="form-input" value="LOCAL_LAPTOP_001" placeholder="Enter device ID">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Target User (Optional)</label>
+                    <select id="targetUserId" class="form-select">
+                        <option value="">Select user...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Reason for Emergency Unlock</label>
+                    <input type="text" id="unlockReason" class="form-input" placeholder="e.g., User forgot credentials, system malfunction">
+                </div>
+
+                <button class="btn btn-emergency" id="unlockBtn" onclick="initiateEmergencyUnlock()">
+                    🆘 INITIATE EMERGENCY UNLOCK
+                </button>
+
+                <div class="countdown" id="countdown"></div>
+
+                <div id="unlockStatus" class="status-message"></div>
+            </div>
+        </div>
+
+        <div class="back-link">
+            <a href="/">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        let verifiedSupervisor = null;
+        let activeCountdownInterval = null;
+
+        // Load users on page load
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users');
+                const data = await response.json();
+                
+                const select = document.getElementById('targetUserId');
+                select.innerHTML = '<option value="">Select user...</option>';
+                data.users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.user_id;
+                    option.textContent = `${user.name} (${user.user_id})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        function showStatus(id, msg, type) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.className = 'status-message status-' + type;
+            el.style.display = 'block';
+            
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    el.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        async function verifySupervisor() {
+            const supervisorId = document.getElementById('supervisorId').value.trim();
+            const pin = document.getElementById('supervisorPin').value.trim();
+
+            if (!supervisorId || !pin) {
+                showStatus('verifyStatus', '❌ Please enter both Supervisor ID and PIN', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('verifyBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span>Verifying...';
+
+            try {
+                const response = await fetch('/api/emergency/verify_supervisor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ supervisor_id: supervisorId, pin: pin })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    verifiedSupervisor = result;
+                    
+                    // Show verified badge
+                    document.getElementById('supervisorName').textContent = result.full_name;
+                    document.getElementById('verifiedBadge').classList.add('active');
+                    
+                    // Enable unlock section
+                    document.getElementById('unlockSection').classList.add('enabled');
+                    
+                    showStatus('verifyStatus', '✓ Supervisor credentials verified successfully!', 'success');
+                    
+                    // Disable verify button
+                    btn.disabled = true;
+                    btn.innerHTML = '✓ Verified';
+                } else {
+                    showStatus('verifyStatus', '❌ ' + result.error, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            } catch (error) {
+                showStatus('verifyStatus', '❌ Connection error: ' + error.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        async function initiateEmergencyUnlock() {
+            if (!verifiedSupervisor) {
+                showStatus('unlockStatus', '❌ Please verify supervisor credentials first', 'error');
+                return;
+            }
+
+            const deviceId = document.getElementById('deviceId').value.trim();
+            const targetUserId = document.getElementById('targetUserId').value;
+            const reason = document.getElementById('unlockReason').value.trim();
+
+            if (!deviceId) {
+                showStatus('unlockStatus', '❌ Device ID is required', 'error');
+                return;
+            }
+
+            if (!reason) {
+                showStatus('unlockStatus', '❌ Please provide a reason for emergency unlock', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('unlockBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span>Initiating...';
+
+            try {
+                const response = await fetch('/api/emergency/unlock', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        device_id: deviceId,
+                        supervisor_id: verifiedSupervisor.supervisor_id,
+                        target_user_id: targetUserId || null,
+                        reason: reason
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('unlockStatus', '✓ ' + result.message, 'success');
+                    
+                    // Show countdown
+                    startCountdown(300); // 5 minutes
+                    
+                    // Clear form
+                    document.getElementById('unlockReason').value = '';
+                    document.getElementById('targetUserId').value = '';
+                    
+                    // Keep button disabled during active unlock
+                    btn.disabled = true;
+                    btn.innerHTML = '⏳ Unlock Active';
+                } else {
+                    showStatus('unlockStatus', '❌ ' + result.error, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            } catch (error) {
+                showStatus('unlockStatus', '❌ Connection error: ' + error.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function startCountdown(seconds) {
+            const countdownEl = document.getElementById('countdown');
+            const unlockBtn = document.getElementById('unlockBtn');
+            countdownEl.classList.add('active');
+            
+            // Clear any existing countdown
+            if (activeCountdownInterval) {
+                clearInterval(activeCountdownInterval);
+            }
+            
+            let remaining = seconds;
+            
+            activeCountdownInterval = setInterval(() => {
+                const minutes = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                countdownEl.textContent = `⏱️ Unlock expires in: ${minutes}:${secs.toString().padStart(2, '0')}`;
+                
+                remaining--;
+                
+                if (remaining < 0) {
+                    clearInterval(activeCountdownInterval);
+                    activeCountdownInterval = null;
+                    countdownEl.textContent = '⏰ Emergency unlock has expired';
+                    
+                    // Re-enable button after expiry
+                    unlockBtn.disabled = false;
+                    unlockBtn.innerHTML = '🆘 INITIATE EMERGENCY UNLOCK';
+                    
+                    setTimeout(() => {
+                        countdownEl.classList.remove('active');
+                    }, 3000);
+                }
+            }, 1000);
+        }
+
+        // Load users on page load
+        loadUsers();
+    </script>
+</body>
+</html>
