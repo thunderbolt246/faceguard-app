@@ -1,9 +1,9 @@
 flask
-psycopg2-binary
+requests
 numpy
 opencv-python
-face-recognition
-pillow
-pandas
+psutil
 reportlab
+pillow
+psycopg2-binary
 gunicorn
